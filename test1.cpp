@@ -441,7 +441,7 @@ static int ApplyGreyThreshold(IplImage* const SrcImg_p, IplImage** const DstImag
 
 static int test2(void)
 {
-           CvCapture*   capture             = cvCaptureFromCAM(0); //cvCaptureFromCAM( CV_CAP_ANY );
+           CvCapture*   capture             = cvCaptureFromCAM( CV_CAP_ANY );
 #ifdef STEREO
            CvCapture*   capture2            = cvCaptureFromCAM(1);
 #endif
@@ -473,7 +473,7 @@ static int test2(void)
   }
 #endif
 
-  enum_devices();
+  //enum_devices();
 
   /* Initiate Tracking History array */
   for (i = 0; i < K_MEANS_NUM_CLUSTERS; ++i)
@@ -512,6 +512,8 @@ static int test2(void)
   cvSaveImage(ImageLocator_p, CurrFrame_p);
 #endif
 
+  printf("Starting loop!\n");
+
   // Show the image captured from the camera in the window and repeat
   while( 1 ) {
     // Get one frame
@@ -525,7 +527,16 @@ static int test2(void)
 	
 	PrevFrame_p = cvCloneImage(CurrFrame_p);
 	//Current_FPS = cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+	printf("query frame\n");
 	CurrFrame_p = cvQueryFrame( capture );
+	ImageToShow_p = cvCloneImage(CurrFrame_p);
+	if (!CurrFrame_p) {
+		printf("BAJS OCKSÅ!\n");
+		return -1;
+	}
+	cvShowImage( "mywindow", ImageToShow_p );
+	cvReleaseImage(&ImageToShow_p);
+	continue;
 #ifdef STEREO
 	CurrFrame2_p = cvQueryFrame( capture2 );
 #endif
