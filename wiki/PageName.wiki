@@ -17,6 +17,6 @@ svn add <new files, modified files>
 
 3. Commit
 
-svn commit -m "First Commit" --username QuickAndDirtyFOV
+svn commit -m "First Commit" --username QuickAndDirtyFOV --password rT2qG8kk4wR5
 
 Use the generated pwd, currently rT2qG8kk4wR5
