@@ -5,6 +5,8 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 
+#include "cameracontrol_linux.h"
+
 class testApp : public ofBaseApp{
 
 	public:
@@ -27,6 +29,7 @@ class testApp : public ofBaseApp{
 		int 				camWidth;
 		int 				camHeight;
 		ofxCvColorImage		ofx_color_img;
+		cam_ctl             uvc_cams;
 };
 
 #endif
