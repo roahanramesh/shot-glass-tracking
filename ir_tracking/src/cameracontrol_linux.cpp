@@ -77,7 +77,7 @@ int cam_ctl::setup()
 
     dev_handles = (CHandle *) malloc(sizeof(*dev_handles));
 
-    if (!controls || !dev_handles) {
+    if (!dev_handles) {
         printf("Failed to allocate controls!\n");
         goto cleanup_num_controls;
     }
