@@ -5,7 +5,7 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 
-#include "cameracontrol_linux.h"
+#include "cameracontrol.h"
 
 class testApp : public ofBaseApp{
 

@@ -28,7 +28,12 @@ void testApp::setup(){
 
 	vidGrabber.setVerbose(true);
 	vidGrabber.listDevices();
+#if defined(__linux__)
 	vidGrabber.setDeviceID(1);
+#else
+	vidGrabber.setDeviceID(0);
+#endif /* Usually running linux on laptop with 2 cams */
+
 	vidGrabber.initGrabber(camWidth,camHeight);
 
 #ifdef SHOW_TRANSFORMED
