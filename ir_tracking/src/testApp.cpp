@@ -10,14 +10,21 @@ void testApp::setup(){
 	camHeight 		= 480;
 	ofx_color_img.allocate(camWidth, camHeight);
 
-	result = uvc_cams.setup();
+	uvc_cams = create_camera_control();
+
+	if (!uvc_cams) {
+        printf("Failed to create camera control!\n");
+        return;
+	}
+
+	result = uvc_cams->setup();
 
 	if (result < 0) {
 	    printf("Failed to setup cameras!\n");
 	    return;
     }
 
-    uvc_cams.set_brightness(-1, 100);
+    uvc_cams->set_brightness(-1, 50);
 
 	vidGrabber.setVerbose(true);
 	vidGrabber.listDevices();

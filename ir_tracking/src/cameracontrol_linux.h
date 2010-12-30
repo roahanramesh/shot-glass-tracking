@@ -1,12 +1,14 @@
-#ifndef _CAMCTRL_H
-#define _CAMCTRL_H
+#ifdef __linux__
+#ifndef _CAMCTRL_LINUX_H
+#define _CAMCTRL_LINUX_H
 
-#include "webcam.h"
+#include "webcam.h" /* Header for libwebcam */
+#include "cameracontrol.h" /* OSI base class */
 
 /**
 * @brief Class that handles interfacing towards libwebcam
 */
-class cam_ctl {
+class cam_ctl_linux : public cam_ctl {
     public:
         /**
         * @brief Enumerate all cameras in the system and their controls
@@ -16,15 +18,16 @@ class cam_ctl {
         /**
         * @brief Set brightness for the given camera
         */
-        int set_brightness(int cam_id, int value);
+        int set_brightness(int cam_id, int32_t value);
 
         /**
         * @brief Constructor
         */
-        cam_ctl();
+        cam_ctl_linux();
     private:
 
         CControl * get_control_struct(int cam_idx, CControlId cid);
+        int set_simple_control(int cam_idx, CControlId cid, int32_t value);
 
         /**
         * @brief Array of device descriptors
@@ -52,4 +55,5 @@ class cam_ctl {
         int default_cam_idx;
 };
 
-#endif /* _CAMCTRL_H */
+#endif /* _CAMCTRL_LINUX_H */
+#endif /* __linux__ */

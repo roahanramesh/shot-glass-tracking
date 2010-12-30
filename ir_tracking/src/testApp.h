@@ -29,7 +29,7 @@ class testApp : public ofBaseApp{
 		int 				camWidth;
 		int 				camHeight;
 		ofxCvColorImage		ofx_color_img;
-		cam_ctl             uvc_cams;
+		cam_ctl             *uvc_cams;
 };
 
 #endif
