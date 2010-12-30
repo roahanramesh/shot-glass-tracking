@@ -20,7 +20,7 @@ class cam_ctl_linux : public cam_ctl {
         /**
         * @brief Set brightness for the given camera
         */
-        int set_brightness(int cam_id, int32_t value);
+        int set_brightness(int cam_id, int value);
 
         /**
         * @brief Constructor
@@ -29,7 +29,7 @@ class cam_ctl_linux : public cam_ctl {
     private:
 
         CControl * get_control_struct(int cam_idx, CControlId cid);
-        int set_simple_control(int cam_idx, CControlId cid, int value);
+        int set_simple_control(int cam_idx, CControlId cid, int32_t value);
 
         /**
         * @brief Array of device descriptors
