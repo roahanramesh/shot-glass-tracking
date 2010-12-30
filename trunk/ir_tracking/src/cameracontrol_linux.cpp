@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <assert.h>
 
 //--------------------------------------------------------------
 cam_ctl_linux::cam_ctl_linux() : cdevs(0), controls(0), dev_handles(0),
@@ -199,8 +200,9 @@ cleanup_devices:
 }
 
 //--------------------------------------------------------------
-int cam_ctl_linux::set_brightness(int cam_id, int32_t value)
+int cam_ctl_linux::set_brightness(int cam_id, int value)
 {
+    assert(sizeof(int) == 4);
     return set_simple_control(cam_id, CC_BRIGHTNESS, value);
 }
 
