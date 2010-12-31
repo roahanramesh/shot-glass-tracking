@@ -13,23 +13,33 @@
 class cam_ctl_linux : public cam_ctl {
     public:
         /**
-        * @brief Enumerate all cameras in the system and their controls
+        * @brief Enumerate all cameras in the system and their controls.
         */
         int setup();
 
         /**
-        * @brief Set brightness for the given camera
+        * @brief Set value for a simple (integer) control.
         */
-        int set_brightness(int cam_id, int value);
+        int set_simple_control(int cam_id, enum simple_control scid, int value);
+
+        /**
+        * @brief Set all controls to default values
+        */
+        int default_all_controls(int cam_id);
 
         /**
         * @brief Constructor
         */
         cam_ctl_linux();
+
+        /**
+         * @brief Destructor
+         */
+         ~cam_ctl_linux();
     private:
 
         CControl * get_control_struct(int cam_idx, CControlId cid);
-        int set_simple_control(int cam_idx, CControlId cid, int32_t value);
+        int _set_simple_control(int cam_idx, CControlId cid, int32_t value);
         int get_choice_control(int cam_idx, CControlId cid);
 
         /**

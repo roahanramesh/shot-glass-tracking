@@ -6,6 +6,39 @@
 #include <cmath>
 #include <assert.h>
 
+/**
+ * Destructor, free all resources and reset all settings.
+ */
+cam_ctl_linux::~cam_ctl_linux()
+{
+    printf("Destructor for cam_ctl_linux called!\n");
+
+    if (controls) {
+        for (int i = 0; i < num_cams; i++) {
+            if (controls[i]) {
+                free(controls[i]);
+            }
+        }
+    }
+    if (dev_handles) {
+        for (int i = 0; i < num_cams; i++) {
+            (void) default_all_controls(i);
+            c_close_device(dev_handles[i]);
+        }
+        free(dev_handles);
+    }
+    if (num_controls) {
+        free(num_controls);
+    }
+    if (controls) {
+        free(controls);
+    }
+    if (cdevs) {
+        free(cdevs);
+    }
+
+    c_cleanup();
+}
 //--------------------------------------------------------------
 cam_ctl_linux::cam_ctl_linux() : cdevs(0), controls(0), dev_handles(0),
     num_cams(0), num_controls(0), default_cam_idx(1)
@@ -124,6 +157,7 @@ int cam_ctl_linux::setup()
 
         printf("******** Controls for %s **********\n\n", cdevs[i].name);
         for (unsigned int j =0; j < count; j++) {
+            printf("---------------------\n");
             printf("Control info %d id = %d name = %s type = %d \n", i,
                 cur_ctrl[j].id, cur_ctrl[j].name, cur_ctrl[j].type);
 
@@ -145,7 +179,7 @@ int cam_ctl_linux::setup()
                                cur_ctrl[j].choices.list[cur_ctrl[j].def.value].name);
                 break;
             case CC_TYPE_BOOLEAN:
-                printf("Boolean, default %d", cur_ctrl[j].def.value);
+                printf("Boolean, default %d\n", cur_ctrl[j].def.value);
                 break;
             case CC_TYPE_RAW:
                 printf("Raw\n");
@@ -154,6 +188,7 @@ int cam_ctl_linux::setup()
                 printf("Unknown control type!\n");
                 break;
             }
+            printf("---------------------\n");
         }
         printf("******* End Controls for %s *********\n\n", cdevs[i].name);
 
@@ -189,10 +224,27 @@ cleanup_devices:
 }
 
 //--------------------------------------------------------------
-int cam_ctl_linux::set_brightness(int cam_id, int value)
+int cam_ctl_linux::set_simple_control(int cam_id, enum simple_control scid, int value)
 {
     assert(sizeof(int) == 4);
-    return set_simple_control(cam_id, CC_BRIGHTNESS, value);
+    switch (scid) {
+    case SC_BRIGHTNESS:
+        return _set_simple_control(cam_id, CC_BRIGHTNESS, value);
+    case SC_GAIN:
+        return _set_simple_control(cam_id, CC_GAIN, value);
+    case SC_SATURATION:
+        return _set_simple_control(cam_id, CC_SATURATION, value);
+    case SC_HUE:
+        return _set_simple_control(cam_id, CC_SATURATION, value);
+    case SC_EXPOSURE_TIME_ABSOLUTE:
+        return _set_simple_control(cam_id, CC_EXPOSURE_TIME_ABSOLUTE, value);
+    case SC_SHARPNESS:
+        return _set_simple_control(cam_id, CC_SHARPNESS, value);
+    default:
+        printf("Unknown simple control\n");
+    }
+
+    return -1;
 }
 
 //--------------------------------------------------------------
@@ -215,7 +267,7 @@ CControl * cam_ctl_linux::get_control_struct(int cam_id, CControlId cid)
 }
 
 //--------------------------------------------------------------
-int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value)
+int cam_ctl_linux::_set_simple_control(int cam_idx, CControlId cid, int32_t value)
 {
     CHandle dev_handle;
     CControlValue control_value;
@@ -270,7 +322,8 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
             return -1;
     }
 
-    printf("Control info: type %d value %d, scaled %d\n", control_value.type, control_value.value, scaled_value);
+    printf("Control info: type = %d id = %d value = %d, scaled = %d\n",
+           control_value.type, ctrl->id, control_value.value, scaled_value);
 
     /* Alter value */
     switch (control_value.type) {
@@ -295,6 +348,47 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
     }
 
     return 0;
+}
+
+int cam_ctl_linux::default_all_controls(int cam_id)
+{
+    CHandle dev_handle;
+    CControl *cur_ctrl;
+    CControl *ctrls;
+    int result = 0;
+
+    if (cam_id < 0) {
+        cam_id = default_cam_idx;
+    }
+
+    ctrls = controls[cam_id];
+    dev_handle = dev_handles[cam_id];
+
+    for (int i = 0; i < num_controls[cam_id]; i++) {
+        cur_ctrl = &ctrls[i];
+
+        switch(cur_ctrl->type) {
+        case CC_TYPE_BOOLEAN:
+        case CC_TYPE_BYTE:
+        case CC_TYPE_WORD:
+        case CC_TYPE_DWORD:
+            /* Set default value */
+            if (C_SUCCESS != c_set_control(dev_handle, cur_ctrl->id, &cur_ctrl->def)) {
+                result = -1;
+                printf("Failed to set control %d!\n", cur_ctrl->id);
+                continue;
+            }
+            break;
+        case CC_TYPE_RAW:
+            break; /* @todo: implement */
+        default:
+            printf("Unknown control type!\n");
+            result = -1;
+            break;
+        }
+    }
+
+    return result;
 }
 
 int cam_ctl_linux::get_choice_control(int cam_idx, CControlId cid)
