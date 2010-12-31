@@ -8,7 +8,7 @@
 
 //--------------------------------------------------------------
 cam_ctl_linux::cam_ctl_linux() : cdevs(0), controls(0), dev_handles(0),
-    num_cams(0), num_controls(0), default_cam_idx(0)
+    num_cams(0), num_controls(0), default_cam_idx(1)
 {
 }
 
@@ -249,6 +249,12 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
         return -1;
     }
 
+    /* Get current value */
+    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
     max = ctrl->max.value;
     min = ctrl->min.value;
     step = ctrl->step.value;
@@ -261,12 +267,6 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
     /* Check that value is within bounds */
     if (scaled_value < min || scaled_value > max) {
             printf("Value is not within bounds!\n");
-            return -1;
-    }
-
-    /* Now actually set the value */
-    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
-            printf("Failed to get control!\n");
             return -1;
     }
 
@@ -288,6 +288,7 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
         return -1;
     }
 
+    /* Now actually set the value */
     if (C_SUCCESS != (result = c_set_control(dev_handle, cid, &control_value))) {
             printf("Failed to set control %d!\n", result);
             return -1;
