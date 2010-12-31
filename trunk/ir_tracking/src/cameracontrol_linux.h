@@ -30,6 +30,7 @@ class cam_ctl_linux : public cam_ctl {
 
         CControl * get_control_struct(int cam_idx, CControlId cid);
         int set_simple_control(int cam_idx, CControlId cid, int32_t value);
+        int get_choice_control(int cam_idx, CControlId cid);
 
         /**
         * @brief Array of device descriptors

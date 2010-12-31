@@ -127,10 +127,33 @@ int cam_ctl_linux::setup()
             printf("Control info %d id = %d name = %s type = %d \n", i,
                 cur_ctrl[j].id, cur_ctrl[j].name, cur_ctrl[j].type);
 
-           if (cur_ctrl[j].type == CC_TYPE_DWORD) {
-               printf("Range: min = %d max = %d step = %d\n",
-                      cur_ctrl[j].min.value, cur_ctrl[j].max.value, cur_ctrl[j].step.value);
-           }
+            switch (cur_ctrl[j].type) {
+            case CC_TYPE_DWORD:
+            case CC_TYPE_WORD:
+            case CC_TYPE_BYTE:
+                printf("Simple control: min = %d max = %d step = %d default = %d\n",
+                       cur_ctrl[j].min.value, cur_ctrl[j].max.value,
+                       cur_ctrl[j].step.value, cur_ctrl[j].def.value);
+                break;
+            case CC_TYPE_CHOICE:
+                printf("Choice list: ");
+                for (unsigned int k = 0; k < cur_ctrl[j].choices.count; k++) {
+                        printf("[%d %s]", cur_ctrl[j].choices.list[k].index,
+                               cur_ctrl[j].choices.list[k].name);
+                }
+                printf(" default [%d %s]\n",  cur_ctrl[j].def.value,
+                               cur_ctrl[j].choices.list[cur_ctrl[j].def.value].name);
+                break;
+            case CC_TYPE_BOOLEAN:
+                printf("Boolean, default %d", cur_ctrl[j].def.value);
+                break;
+            case CC_TYPE_RAW:
+                printf("Raw\n");
+                break;
+            default:
+                printf("Unknown control type!\n");
+                break;
+            }
         }
         printf("******* End Controls for %s *********\n\n", cdevs[i].name);
 
@@ -163,40 +186,6 @@ cleanup_devices:
     c_cleanup();
 
     return -1;
-
-
-
-
-    #if 0
-    /* Enumerate available controls */
-
-    /* Beef up exposure */
-    if (C_SUCCESS != c_get_control(dev_handle, CC_BRIGHTNESS, &control_value)) {
-            printf("Failed to get control!\n");
-    }
-
-    printf("Control info: type %d value %d\n", control_value.type, control_value.value);
-
-    /* Beef up exposure */
-    control_value.value = 255;
-    if (C_SUCCESS != (result = c_set_control(dev_handle, CC_BRIGHTNESS, &control_value))) {
-            printf("Failed to set control %d!\n", result);
-    }
-
-    if (C_SUCCESS != c_get_control(dev_handle, CC_BRIGHTNESS, &control_value)) {
-            printf("Failed to get control!\n");
-    }
-
-    printf("Control info: type %d value %d\n", control_value.type, control_value.value);
-
-    //c_close_device(dev_handle);
-
-    //c_cleanup();
-
-    printf("Enumerated devices!\n");
-    #endif
-
-    return 0;
 }
 
 //--------------------------------------------------------------
@@ -276,7 +265,7 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
     }
 
     /* Now actually set the value */
-    if (C_SUCCESS != c_get_control(dev_handle, CC_BRIGHTNESS, &control_value)) {
+    if (C_SUCCESS != c_get_control(dev_handle, ctrl->id, &control_value)) {
             printf("Failed to get control!\n");
             return -1;
     }
@@ -299,12 +288,34 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
         return -1;
     }
 
-    if (C_SUCCESS != (result = c_set_control(dev_handle, CC_BRIGHTNESS, &control_value))) {
+    if (C_SUCCESS != (result = c_set_control(dev_handle, ctrl->id, &control_value))) {
             printf("Failed to set control %d!\n", result);
             return -1;
     }
 
     return 0;
+}
+
+int cam_ctl_linux::get_choice_control(int cam_idx, CControlId cid)
+{
+    CHandle dev_handle;
+    CControlValue control_value;
+
+    if (cam_idx < 0) {
+        cam_idx = default_cam_idx;
+    }
+
+    dev_handle = dev_handles[cam_idx];
+
+    /* Now actually set the value */
+    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
+    printf("Got value %d\n", control_value.value);
+
+    return control_value.value;
 }
 
 #endif /* __linux__ */
