@@ -231,7 +231,7 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
 
     dev_handle = dev_handles[cam_idx];
 
-    ctrl = get_control_struct(cam_idx, CC_BRIGHTNESS);
+    ctrl = get_control_struct(cam_idx, cid);
 
     if (!ctrl) {
         printf("Failed to get control struct!\n");
@@ -265,7 +265,7 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
     }
 
     /* Now actually set the value */
-    if (C_SUCCESS != c_get_control(dev_handle, ctrl->id, &control_value)) {
+    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
             printf("Failed to get control!\n");
             return -1;
     }
@@ -288,7 +288,7 @@ int cam_ctl_linux::set_simple_control(int cam_idx, CControlId cid, int32_t value
         return -1;
     }
 
-    if (C_SUCCESS != (result = c_set_control(dev_handle, ctrl->id, &control_value))) {
+    if (C_SUCCESS != (result = c_set_control(dev_handle, cid, &control_value))) {
             printf("Failed to set control %d!\n", result);
             return -1;
     }
