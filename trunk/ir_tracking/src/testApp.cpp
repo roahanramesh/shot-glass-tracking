@@ -24,7 +24,9 @@ void testApp::setup(){
 	    return;
     }
 
-    uvc_cams->set_brightness(-1, 50);
+    uvc_cams->set_simple_control(-1, SC_BRIGHTNESS, 50);
+    uvc_cams->set_simple_control(-1, SC_SHARPNESS, 100);
+    //uvc_cams->default_all_controls(-1);
 
 	vidGrabber.setVerbose(true);
 	vidGrabber.listDevices();
@@ -79,6 +81,15 @@ void testApp::draw(){
 	videoTexture.draw(20,20+camHeight,camWidth,camHeight);
 	#endif
 #endif
+}
+
+testApp::~testApp()
+{
+    printf("Destructor for testApp called!\n");
+    delete uvc_cams;
+    if (videoInverted) {
+        free(videoInverted);
+    }
 }
 
 

@@ -13,7 +13,12 @@ int cam_ctl_win32::setup()
 }
 
 //--------------------------------------------------------------
-int cam_ctl_win32::set_brightness(int cam_id, int value)
+int cam_ctl_win32::set_simple_control(int cam_id, enum simple_control scid, int value)
+{
+    return 0;
+}
+
+int cam_ctl_win32::default_all_controls(int cam_id)
 {
     return 0;
 }
