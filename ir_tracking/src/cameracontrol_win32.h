@@ -15,17 +15,27 @@ class cam_ctl_win32 : public cam_ctl {
         /**
         * @brief Enumerate all cameras in the system and their controls
         */
-        virtual int setup() = 0;
+        int setup();
 
         /**
         * @brief Set brightness for the given camera
         */
-        virtual int set_simple_control(int cam_id, enum simple_control scid, int value) = 0;
+        int set_simple_control(int cam_id, enum simple_control scid, int value);
 
         /**
         * @brief Set all controls to default values
         */
-        virtual int default_all_controls(int cam_id) = 0;
+        int default_all_controls(int cam_id);
+
+        /**
+         * @brief Set a choice based control
+         */
+        int set_choice_control(int cam_id, enum choice_control ccid);
+
+        /**
+         * @brief Set a boolean control
+         */
+        int set_boolean_control(int cam_id, enum boolean_control bcid, bool value);
 
         /**
         * @brief Constructor

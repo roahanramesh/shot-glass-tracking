@@ -23,4 +23,14 @@ int cam_ctl_win32::default_all_controls(int cam_id)
     return 0;
 }
 
+int cam_ctl_win32::set_choice_control(int cam_id, enum choice_control ccid)
+{
+    return 0;
+}
+
+int cam_ctl_win32::set_boolean_control(int cam_id, enum boolean_control bcid, bool value)
+{
+    return 0;
+}
+
 #endif /* _WIN32 */

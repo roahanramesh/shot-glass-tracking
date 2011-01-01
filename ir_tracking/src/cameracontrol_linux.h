@@ -23,6 +23,16 @@ class cam_ctl_linux : public cam_ctl {
         int set_simple_control(int cam_id, enum simple_control scid, int value);
 
         /**
+         * @brief Set a choice based control
+         */
+        virtual int set_choice_control(int cam_id, enum choice_control ccid);
+
+        /**
+         * @brief Set a boolean control
+         */
+        int set_boolean_control(int cam_id, enum boolean_control bcid, bool value);
+
+        /**
         * @brief Set all controls to default values
         */
         int default_all_controls(int cam_id);

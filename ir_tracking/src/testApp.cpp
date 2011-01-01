@@ -25,7 +25,10 @@ void testApp::setup(){
     }
 
     uvc_cams->set_simple_control(-1, SC_BRIGHTNESS, 50);
-    uvc_cams->set_simple_control(-1, SC_SHARPNESS, 100);
+    uvc_cams->set_simple_control(-1, SC_SHARPNESS, 50);
+    uvc_cams->set_choice_control(-1, CHOICE_PLF_50_HZ);
+    uvc_cams->set_boolean_control(-1, BC_DISABLE_VIDEOP, false);
+    uvc_cams->set_boolean_control(-1, BC_WB_TEMP_AUTO, false);
     //uvc_cams->default_all_controls(-1);
 
 	vidGrabber.setVerbose(true);

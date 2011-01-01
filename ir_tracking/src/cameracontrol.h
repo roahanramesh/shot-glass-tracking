@@ -8,6 +8,27 @@ enum simple_control {
     SC_SATURATION,
     SC_HUE,
     SC_SHARPNESS,
+    SC_EXPOSURE_AUTO_PRIORITY,
+};
+
+enum boolean_control {
+    BC_WB_TEMP_AUTO, /* Manual WB */
+    BC_EXPOSURE_AUTO, /* Manual exposure */
+    BC_DISABLE_VIDEOP, /* Raw image */
+};
+
+enum choice_control {
+    _CHOICE_PLF_START,
+    CHOICE_PLF_50_HZ,
+    CHOICE_PLF_60_HZ,
+    CHOICE_PLF_DISABLED,
+    _CHOICE_PLF_END,
+    _CHOICE_EXPOSURE_START,
+    CHOICE_EXPOSURE_SHUTTER,
+    CHOICE_EXPOSURE_APERTURE,
+    CHOICE_EXPOSURE_AUTO,
+    CHOICE_EXPOSURE_MANUAL,
+    _CHOICE_EXPOSURE_END,
 };
 
 /**
@@ -34,6 +55,16 @@ class cam_ctl {
         * @brief Set all controls to default values
         */
         virtual int default_all_controls(int cam_id) = 0;
+
+        /**
+         * @brief Set a choice based control
+         */
+        virtual int set_choice_control(int cam_id, enum choice_control ccid) = 0;
+
+        /**
+         * @brief Set a boolean control
+         */
+        virtual int set_boolean_control(int cam_id, enum boolean_control bcid, bool value) = 0;
     private:
 };
 
