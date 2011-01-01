@@ -4,7 +4,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <assert.h>
+#include <limits.h>
+
+#define CHOICE_STRING_PLF_50 "50 Hz"
+#define CHOICE_STRING_PLF_60 "60 Hz"
+#define CHOICE_STRING_PLF_DISABLED "Disabled"
+#define CHOICE_STRING_EXPOSURE_AUTO "Auto Mode"
+#define CHOICE_STRING_EXPOSURE_MANUAL "Manual Mode"
+#define CHOICE_STRING_EXPOSURE_SHUTTER "Shutter Priority Mode"
+#define CHOICE_STRING_EXPOSURE_APERTURE "Aperture Priority Mode"
 
 /**
  * Destructor, free all resources and reset all settings.
@@ -350,6 +360,185 @@ int cam_ctl_linux::_set_simple_control(int cam_idx, CControlId cid, int32_t valu
     return 0;
 }
 
+int cam_ctl_linux::set_choice_control(int cam_id, enum choice_control ccid)
+{
+    CHandle dev_handle;
+    CControlValue control_value;
+    CControl *ctrl = NULL;
+    CControlId cid = CC_POWER_LINE_FREQUENCY;
+    unsigned int ctrl_idx = UINT_MAX;
+
+    if (cam_id < 0) {
+        cam_id = default_cam_idx;
+    }
+
+    if(_CHOICE_PLF_START < ccid && ccid < _CHOICE_PLF_END) {
+        cid = CC_POWER_LINE_FREQUENCY;
+    } else if (_CHOICE_EXPOSURE_START < ccid && ccid  < _CHOICE_EXPOSURE_START) {
+        cid = CC_AUTO_EXPOSURE_MODE;
+    } else {
+        printf("Bad choice control id\n");
+        return -1;
+    }
+
+    dev_handle = dev_handles[cam_id];
+
+    ctrl = get_control_struct(cam_id, cid);
+
+    if (!ctrl) {
+        printf("Failed to get control struct!\n");
+        return -1;
+    }
+
+    if (ctrl->type != CC_TYPE_CHOICE) {
+        printf("Wrong type for control %d!\n", ctrl->type);
+        return -1;
+    }
+
+    /* Look for the correct index to set */
+    for (unsigned int i = 0; i < ctrl->choices.count; i++) {
+        char *name = ctrl->choices.list[i].name;
+        switch (ccid) {
+        case CHOICE_PLF_50_HZ:
+            if (strncmp(name, CHOICE_STRING_PLF_50, strlen(CHOICE_STRING_PLF_50)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_PLF_60_HZ:
+            if (strncmp(name, CHOICE_STRING_PLF_60, strlen(CHOICE_STRING_PLF_60)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_PLF_DISABLED:
+            if (strncmp(name, CHOICE_STRING_PLF_DISABLED, strlen(CHOICE_STRING_PLF_DISABLED)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_EXPOSURE_AUTO:
+            if (strncmp(name, CHOICE_STRING_EXPOSURE_AUTO, strlen(CHOICE_STRING_EXPOSURE_AUTO)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_EXPOSURE_MANUAL:
+            if (strncmp(name, CHOICE_STRING_EXPOSURE_MANUAL, strlen(CHOICE_STRING_EXPOSURE_MANUAL)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_EXPOSURE_SHUTTER:
+            if (strncmp(name, CHOICE_STRING_EXPOSURE_SHUTTER, strlen(CHOICE_STRING_EXPOSURE_SHUTTER)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        case CHOICE_EXPOSURE_APERTURE:
+            if (strncmp(name, CHOICE_STRING_EXPOSURE_APERTURE, strlen(CHOICE_STRING_EXPOSURE_APERTURE)) == 0) {
+                ctrl_idx = i;
+                break;
+            }
+            break;
+        default:
+            printf("Warning! Unmapped choice %s\n", name);
+            break;
+        }
+    }
+
+    /* Check of we found a valid index */
+    if (ctrl_idx >= ctrl->choices.count) {
+        printf("Failed to find index to set!\n");
+        return -1;
+    }
+
+    /**
+     * Now set the control
+     */
+    /* Get current value */
+    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
+    control_value.value = ctrl_idx;
+    printf("Setting choice control index %d\n", ctrl_idx);
+
+    /* Get current value */
+    if (C_SUCCESS != c_set_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
+    return 0;
+}
+
+int cam_ctl_linux::set_boolean_control(int cam_id, enum boolean_control bcid, bool value)
+{
+    CHandle dev_handle;
+    CControlValue control_value;
+    CControl *ctrl = NULL;
+    CControlId cid = CC_POWER_LINE_FREQUENCY;
+
+    if (cam_id < 0) {
+        cam_id = default_cam_idx;
+    }
+
+    switch (bcid) {
+    case BC_EXPOSURE_AUTO:
+        cid = CC_AUTO_EXPOSURE_PRIORITY;
+        break;
+    case BC_DISABLE_VIDEOP:
+        cid = CC_LOGITECH_DISABLE_PROCESSING;
+        break;
+    case BC_WB_TEMP_AUTO:
+        cid = CC_AUTO_WHITE_BALANCE_TEMPERATURE;
+        break;
+    default:
+        printf("Unknown boolean control %d\n", bcid);
+        break;
+    }
+
+    dev_handle = dev_handles[cam_id];
+
+    ctrl = get_control_struct(cam_id, cid);
+
+    if (!ctrl) {
+        printf("Failed to get control struct!\n");
+        return -1;
+    }
+
+    if (ctrl->type != CC_TYPE_BOOLEAN) {
+        printf("Wrong type for control %d!\n", ctrl->type);
+        return -1;
+    }
+
+    /**
+     * Now set the control
+     */
+    /* Get current value */
+    if (C_SUCCESS != c_get_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
+    if (value) {
+        control_value.value = 1;
+    } else {
+        control_value.value = 0;
+    }
+
+    printf("Setting boolean control %d\n", control_value.value);
+
+    /* Get current value */
+    if (C_SUCCESS != c_set_control(dev_handle, cid, &control_value)) {
+            printf("Failed to get control!\n");
+            return -1;
+    }
+
+    return 0;
+}
 int cam_ctl_linux::default_all_controls(int cam_id)
 {
     CHandle dev_handle;
@@ -372,6 +561,8 @@ int cam_ctl_linux::default_all_controls(int cam_id)
         case CC_TYPE_BYTE:
         case CC_TYPE_WORD:
         case CC_TYPE_DWORD:
+        case CC_TYPE_CHOICE:
+        case CC_TYPE_RAW:
             /* Set default value */
             if (C_SUCCESS != c_set_control(dev_handle, cur_ctrl->id, &cur_ctrl->def)) {
                 result = -1;
@@ -379,10 +570,8 @@ int cam_ctl_linux::default_all_controls(int cam_id)
                 continue;
             }
             break;
-        case CC_TYPE_RAW:
-            break; /* @todo: implement */
         default:
-            printf("Unknown control type!\n");
+            printf("Unknown control type! %d\n", cur_ctrl->type);
             result = -1;
             break;
         }
