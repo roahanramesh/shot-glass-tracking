@@ -1,0 +1,1 @@
+Track shot glasses that transmit IR-light using web camera. Make cool visualizations with digital projector.
